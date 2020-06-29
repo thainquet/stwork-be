@@ -1,0 +1,17 @@
+USERNAME_REQUIRED = "username required!"
+PASSWORD_REQUIRED = "password required!"
+EMAIL_REQUIRED = "email required!"
+ACOUNT_EXIST = "account existed!"
+EMAIL_EXIST = "email existed!"
+CREATE_ACCOUNT = "create account successfully"
+USERNAME_PASSWORD_REQUIRED = "Both username anhd password are required!"
+USERNAME_NOT_FOUND = "Username not found"
+LOGIN_SUCCESS = "login success"
+WRONG_PASSWORD = "wrong password"
+ALL_FIELDS_REQUIRED = "All fields required!"
+USERNAME_EMAIL_WRONG = "user and email not belong together!"
+SEND_NEW_PASS = 'New password sent to your mail!'
+NEW_PASSWORD_REQUIRED = "new password required!"
+WRONG_USERNAME_PASSWORD = "wrong username or password"
+OLD_NEW_PASSWORD_DIFFERENT = "old password and new password must be different"
+CHANGE_PASSWORD_SUCCESS = 'Change password successfully!'
