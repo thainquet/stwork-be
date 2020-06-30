@@ -8,8 +8,12 @@ import random
 import string
 from config import configMail, configDB
 import message
-import os, time, math, shutil
-import smtplib, ssl
+import os
+import time
+import math
+import shutil
+import smtplib
+import ssl
 
 # Create a secure SSL context
 context = ssl.create_default_context()
@@ -23,7 +27,7 @@ def create_app():
     app.config['MYSQL_DATABASE_PASSWORD'] = configDB.passw
     app.config['MYSQL_DATABASE_DB'] = configDB.db
     app.config['MYSQL_DATABASE_HOST'] = configDB.host
-    CORS(app)    
+    CORS(app)
     bcrypt = Bcrypt(app)
     mysql = MySQL()
     mysql.init_app(app)
@@ -40,12 +44,12 @@ def create_app():
     mail = Mail(app)
 
     @app.route('/', methods=['GET'])
-    def home():   
+    def home():
         return "Hello, flask app works ! - Thainq"
 
     @app.route('/register', methods=['POST'])
     def register():
-        req = request.get_json()
+        req = request.get_json(force=True)
         # handle body request
         if not req["username"] or len(req["username"]) == 0:
             return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 400)
@@ -60,7 +64,8 @@ def create_app():
         pw = req["password"]
         email = req['email']
         print(name, pw, email, flush=True)
-        pw_hashed = bcrypt.generate_password_hash(req["password"]).decode('utf-8').encode('ascii', 'ignore')
+        pw_hashed = bcrypt.generate_password_hash(
+            req["password"]).decode('utf-8').encode('ascii', 'ignore')
 
         # validate body request
 
@@ -81,7 +86,8 @@ def create_app():
 
         # handle mailing
 
-        msg = Message('Your account info', sender='accrac016@gmail.com', recipients=[email])
+        msg = Message('Your account info',
+                      sender='accrac016@gmail.com', recipients=[email])
         msg.body = "username: " + name + "\npassword: " + pw
         mail.send(msg)
         return jsonify({'code': 200, 'message': message.CREATE_ACCOUNT})
@@ -89,7 +95,7 @@ def create_app():
     @app.route('/login', methods=['POST'])
     def login():
         # get body info
-        req = request.get_json()
+        req = request.get_json(force=True)
         name = req.get("username")
         pw = req.get("password")
         if not name or not pw or (not name and not pw):
@@ -103,23 +109,19 @@ def create_app():
         passInDb = pointer.fetchone()
         success = bcrypt.check_password_hash(passInDb[0], pw)
         if success:
-            token = jwt.encode({
-                'username': name
-            }, secret.SECRET_KEY, algorithm='HS256').decode('utf-8')
-            return make_response(jsonify({'code': 200, 'message': message.LOGIN_SUCCESS,
-             'token': token
-             }), 200)
+            return make_response(jsonify({'code': 200, 'message': message.LOGIN_SUCCESS}), 200)
         return make_response(jsonify({'code': 400, 'message': message.WRONG_PASSWORD}), 400)
 
     # func for creating password
     def generatePassword(length):
         numStr = ''.join(random.choice(string.digits) for _ in range(2))
-        charStr = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase) for _ in range(length - 2))
+        charStr = ''.join(random.choice(
+            string.ascii_uppercase + string.ascii_lowercase) for _ in range(length - 2))
         return charStr[-6:-2] + numStr + charStr[-2:]
 
     @app.route('/forgotPass', methods=['POST'])
     def forgotPass():
-        req = request.get_json()
+        req = request.get_json(force=True)
         name = req.get("username")
         email = req.get("email")
 
@@ -147,7 +149,8 @@ def create_app():
                         (hashed_new_pass.decode('utf-8').encode('ascii', 'ignore'), email))
         conn.commit()
         # handle mailing
-        msg = Message('Password changed! ', sender='accrac016@gmail.com', recipients=[email])
+        msg = Message('Password changed! ',
+                      sender='accrac016@gmail.com', recipients=[email])
         msg.body = "Your new password is: " + new_pass
         mail.send(msg)
         return make_response(jsonify({'code': 200, 'message': message.SEND_NEW_PASS}), 200)
