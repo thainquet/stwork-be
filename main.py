@@ -45,9 +45,17 @@ def create_app():
 
     @app.route('/', methods=['GET'])
     def home():
+        with open("data.txt", "r", encoding='utf-8') as f:
+            print(f.read(), flush=True)
         return "Hello, flask app works ! - Thainq"
 
-    @app.route('/register', methods=['POST'])
+    @app.route('/getJobs', methods=['GET'])
+    def getJobs():
+        pointer.execute("select * from jobs")
+        data = pointer.fetchall()
+        return make_response(jsonify({'code': 200, 'message': "ok", 'data': data}), 200)
+
+    @ app.route('/register', methods=['POST'])
     def register():
         req = request.get_json(force=True)
         # handle body request
@@ -92,7 +100,7 @@ def create_app():
         mail.send(msg)
         return jsonify({'code': 200, 'message': message.CREATE_ACCOUNT})
 
-    @app.route('/login', methods=['POST'])
+    @ app.route('/login', methods=['POST'])
     def login():
         # get body info
         req = request.get_json(force=True)
@@ -119,7 +127,7 @@ def create_app():
             string.ascii_uppercase + string.ascii_lowercase) for _ in range(length - 2))
         return charStr[-6:-2] + numStr + charStr[-2:]
 
-    @app.route('/forgotPass', methods=['POST'])
+    @ app.route('/forgotPass', methods=['POST'])
     def forgotPass():
         req = request.get_json(force=True)
         name = req.get("username")
@@ -155,7 +163,7 @@ def create_app():
         mail.send(msg)
         return make_response(jsonify({'code': 200, 'message': message.SEND_NEW_PASS}), 200)
 
-    @app.route('/changePass', methods=['POST'])
+    @ app.route('/changePass', methods=['POST'])
     def changePass():
         req = request.get_json()
         name = req.get("username")
