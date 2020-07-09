@@ -59,7 +59,7 @@ def create_app():
         data = dict_cursor.fetchall()
         return make_response(jsonify({'code': 200, 'message': "ok", 'data': data}), 200)
 
-    @ app.route('/register', methods=['POST'])
+    @app.route('/register', methods=['POST'])
     def register():
         req = request.get_json(force=True)
         # handle body request
@@ -196,6 +196,11 @@ def create_app():
                         (hashed_new_pass.decode('utf-8').encode('ascii', 'ignore'), name))
         conn.commit()
         return make_response(jsonify({'code': 200, 'message': message.CHANGE_PASSWORD_SUCCESS}), 200)
+
+    @app.route('/jobs/<id>', methods=['GET'])
+    def getJobByID(id):
+        dict_cursor.execute("select * from jobs where id=%s", (id,))
+        return make_response(jsonify({'code': 200, 'message': 'ok', 'data': dict_cursor.fetchone()}), 200)
 
     return app
 
