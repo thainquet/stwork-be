@@ -15,6 +15,12 @@ import shutil
 import smtplib
 import ssl
 
+import mysql.connector
+
+dict_conn = mysql.connector.connect(
+    host=configDB.host, db=configDB.db, user=configDB.name, passwd=configDB.passw)
+dict_cursor = dict_conn.cursor(dictionary=True)
+
 # Create a secure SSL context
 context = ssl.create_default_context()
 
@@ -45,14 +51,12 @@ def create_app():
 
     @app.route('/', methods=['GET'])
     def home():
-        with open("data.txt", "r", encoding='utf-8') as f:
-            print(f.read(), flush=True)
         return "Hello, flask app works ! - Thainq"
 
     @app.route('/getJobs', methods=['GET'])
     def getJobs():
-        pointer.execute("select * from jobs")
-        data = pointer.fetchall()
+        dict_cursor.execute("select * from jobs")
+        data = dict_cursor.fetchall()
         return make_response(jsonify({'code': 200, 'message': "ok", 'data': data}), 200)
 
     @ app.route('/register', methods=['POST'])
