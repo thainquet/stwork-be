@@ -45,8 +45,6 @@ def create_app():
 
     @app.route('/', methods=['GET'])
     def home():
-        with open("data.txt", "r", encoding='utf-8') as f:
-            print(f.read(), flush=True)
         return "Hello, flask app works ! - Thainq"
 
     @app.route('/getJobs', methods=['GET'])
@@ -198,4 +196,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
