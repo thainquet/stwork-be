@@ -62,13 +62,14 @@ def create_app():
     @app.route('/register', methods=['POST'])
     def register():
         req = request.get_json(force=True)
+        print(req, flush=True)
         # handle body request
         if not req["username"] or len(req["username"]) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 200)
         if not req["password"] or len(req["password"]) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.PASSWORD_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.PASSWORD_REQUIRED}), 200)
         if not req["email"] or len(req["email"]) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.EMAIL_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.EMAIL_REQUIRED}), 200)
 
         # get body request
 
@@ -84,10 +85,10 @@ def create_app():
         # check isExist username & email
         pointer.execute("select id from user where username = %s", name)
         if len(pointer.fetchall()) > 0:
-            return make_response(jsonify({'code': 400, 'message': message.ACOUNT_EXIST}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.ACOUNT_EXIST}), 200)
         pointer.execute("select id from user where email = %s", email)
         if len(pointer.fetchall()) > 0:
-            return make_response(jsonify({'code': 400, 'message': message.EMAIL_EXIST}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.EMAIL_EXIST}), 200)
 
         # sql query for inserting data
         record_for_inserting = (name, pw_hashed, email)
@@ -100,7 +101,7 @@ def create_app():
 
         msg = Message('Your account info',
                       sender='accrac016@gmail.com', recipients=[email])
-        msg.body = "username: " + name + "\npassword: " + pw
+        msg.body = "username: " + name + "\npassword: " + pw + "\n\nFrom Stwork app."
         mail.send(msg)
         return jsonify({'code': 200, 'message': message.CREATE_ACCOUNT})
 
@@ -111,18 +112,18 @@ def create_app():
         name = req.get("username")
         pw = req.get("password")
         if not name or not pw or (not name and not pw):
-            return make_response(jsonify({'code': 400, 'message': message.USERNAME_PASSWORD_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.USERNAME_PASSWORD_REQUIRED}), 200)
         # check user exist
         pointer.execute("Select * from user where username = %s", name)
         if pointer.rowcount == 0:
-            return make_response(jsonify({'code': 400, 'message': message.USERNAME_NOT_FOUND}), 404)
+            return make_response(jsonify({'code': 400, 'message': message.USERNAME_NOT_FOUND}), 200)
         # check db
         pointer.execute("Select password from user where username = %s", name)
         passInDb = pointer.fetchone()
         success = bcrypt.check_password_hash(passInDb[0], pw)
         if success:
             return make_response(jsonify({'code': 200, 'message': message.LOGIN_SUCCESS}), 200)
-        return make_response(jsonify({'code': 400, 'message': message.WRONG_PASSWORD}), 400)
+        return make_response(jsonify({'code': 400, 'message': message.WRONG_PASSWORD}), 200)
 
     # func for creating password
     def generatePassword(length):
@@ -139,21 +140,21 @@ def create_app():
 
         # handle body request
         if not name and not email:
-            return make_response(jsonify({'code': 400, 'message': message.ALL_FIELDS_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.ALL_FIELDS_REQUIRED}), 200)
         if not name or len(name) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 200)
         if not email or len(email) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.EMAIL_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.EMAIL_REQUIRED}), 200)
         # check username existed
         pointer.execute("Select * from user where username = %s", name)
         if pointer.rowcount == 0:
-            return make_response(jsonify({'code': 404, 'message': message.USERNAME_NOT_FOUND}), 404)
+            return make_response(jsonify({'code': 404, 'message': message.USERNAME_NOT_FOUND}), 200)
         # check email === username
         pointer.execute("Select email from user where username = %s", name)
         fetchDB = pointer.fetchone()
         current = fetchDB[0]
         if email != current:
-            return make_response(jsonify({'code': 400, 'message': message.USERNAME_EMAIL_WRONG}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.USERNAME_EMAIL_WRONG}), 200)
         # make new password for user
         new_pass = generatePassword(8)
         hashed_new_pass = bcrypt.generate_password_hash(new_pass)
@@ -163,38 +164,46 @@ def create_app():
         # handle mailing
         msg = Message('Password changed! ',
                       sender='accrac016@gmail.com', recipients=[email])
-        msg.body = "Your new password is: " + new_pass
+        msg.body = "Your new password is: " + new_pass + "\n\nFrom Stwork app."
         mail.send(msg)
         return make_response(jsonify({'code': 200, 'message': message.SEND_NEW_PASS}), 200)
 
     @ app.route('/changePass', methods=['POST'])
     def changePass():
-        req = request.get_json()
+        req = request.get_json(force=True)
         name = req.get("username")
         pw = req.get("password")
         new_pw = req.get("newpassword")
 
         # handle body request
         if not name and not pw and not new_pw:
-            return make_response(jsonify({'code': 400, 'message': message.ALL_FIELDS_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.ALL_FIELDS_REQUIRED}), 200)
         if not name or len(name) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.USERNAME_REQUIRED}), 200)
         if not pw or len(pw) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.PASSWORD_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.PASSWORD_REQUIRED}), 200)
         if not new_pw or len(new_pw) == 0:
-            return make_response(jsonify({'code': 400, 'message': message.NEW_PASSWORD_REQUIRED}), 400)
+            return make_response(jsonify({'code': 400, 'message': message.NEW_PASSWORD_REQUIRED}), 200)
         pointer.execute("Select password from user where username = %s", name)
         passInDb = pointer.fetchone()
         success = bcrypt.check_password_hash(passInDb[0], pw)
         if not success:
-            return make_response(jsonify({'stt': 400, 'message': message.WRONG_USERNAME_PASSWORD}), 400)
+            return make_response(jsonify({'stt': 400, 'message': message.WRONG_USERNAME_PASSWORD}), 200)
         if pw == new_pw:
             return make_response(jsonify({'stt': 400, 'message': message.OLD_NEW_PASSWORD_DIFFERENT}),
-                                 400)
+                                 200)
         hashed_new_pass = bcrypt.generate_password_hash(new_pw)
         pointer.execute("update user set password = %s where username = %s",
                         (hashed_new_pass.decode('utf-8').encode('ascii', 'ignore'), name))
         conn.commit()
+        # handle mailing
+        pointer.execute("Select email from user where username = %s", name)
+        fetchDB = pointer.fetchone()
+        email = fetchDB[0]
+        msg = Message('Your password has been changed! ',
+                      sender='accrac016@gmail.com', recipients=[email])
+        msg.body = "Your new password is: " + new_pw + "\n\nFrom Stwork app."
+        mail.send(msg)
         return make_response(jsonify({'code': 200, 'message': message.CHANGE_PASSWORD_SUCCESS}), 200)
 
     @app.route('/jobs/<id>', methods=['GET'])
@@ -207,4 +216,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0", port=5000)
+    app.run()
